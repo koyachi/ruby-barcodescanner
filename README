@@ -4,6 +4,7 @@
 
 == Description
 
+Retrievee barcode value from barcode image file
 
 == Installation
 
@@ -18,9 +19,32 @@
 
 == Features/Problems
 
+=== Require Libraries
+
+ImageMagick, zebra(http://zebra.sourceforge.net/)
+
+==== install zebra
+
+if you install zebra to non-x machine, 
+
+	./configure --without-gtk --withouut-qt
+
+and make, make install.
 
 == Synopsis
 
+	require 'rubygems'
+	require 'barcodescanner'
+	
+	# take from test
+	expected = '9784087204254'
+	result = BarcodeScanner.process_image_file("#{expected}.jpg")
+	assert_equal(expected, result)
+
+=== "cannot open shared object file: No such file or directory "
+
+	echo "/usr/local/lib" >> /etc/ld.so.conf
+	/sbin/ldconfig
 
 == Copyright
 
