@@ -1,5 +1,5 @@
 // BarcodeScanner
-// zebra binding for ruby
+// zbar binding for ruby
 // 
 // 2008-11-10 t.koyachi
 
@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <Magick++.h>
-#include <zebra.h>
+#include <zbar.h>
 
 typedef VALUE RubyType(...); 
 
@@ -17,36 +17,68 @@ VALUE
 brcdscnr_s_process_image_file(VALUE self, VALUE filename)
 {
     const char* fn = StringValuePtr(filename);
-    // そのうちclass変数にしたい
-    zebra::Processor* processor = new zebra::Processor(false, NULL, false);
-//    zebra::Processor* processor = new zebra::Processor(false);
+    
+		// create a reader
+		zbar::ImageScanner scanner;
+		
+		// configure the reader
+    scanner.set_config(zbar::ZBAR_NONE, zbar::ZBAR_CFG_ENABLE, 1);
 
-    Magick::Image image;
-    image.read(fn);
-    image.modifyImage();
-
-    Magick::Blob scan_data;
+		// read image file
+    Magick::Image image(fn); 
+		
+		// convert to gray
+		image.modifyImage();
+		Magick::Blob scan_data;
     image.write(&scan_data, "GRAY", 8);
-    unsigned width = image.columns();
+    
+		// obtain image data
+		unsigned width = image.columns();
     unsigned height = image.rows();
+
+		// image error
     if (scan_data.length() != width * height) {
         rb_raise(rb_eException, "scan_data.length(%d) != width(%d) * height(%d)",
                  scan_data.length(), width, height);
     }
 
-    zebra::Image zimage(width, height, "Y800",
-                        scan_data.data(), scan_data.length());
-    processor->process_image(zimage);
+		// wrap image data
+		const void *raw = scan_data.data();
+		
+    zbar::Image zimage(width, height, "Y800",
+                        raw, scan_data.length());
+    
+		// scan the image for barcodes
+    int n = scanner.scan(zimage);
 
-    std::string result;
-    for (zebra::Image::SymbolIterator sym = zimage.symbol_begin();
+		// support multiple values
+		VALUE return_array = rb_ary_new();
+		
+    std::string type, data;
+    for (zbar::Image::SymbolIterator sym = zimage.symbol_begin();
          sym != zimage.symbol_end();
          ++sym)
-    {
-        result += sym->get_data();
+    {				
+				type = sym->get_type_name();
+				data = sym->get_data();
+	
+				VALUE hash_for_type_and_data = rb_hash_new();
+				rb_hash_aset(hash_for_type_and_data, 
+					ID2SYM(rb_intern("type")), rb_str_new2(type.c_str()));
+				
+				rb_hash_aset(hash_for_type_and_data, 
+					ID2SYM(rb_intern("data")), rb_str_new2(data.c_str()));
+				
+				rb_ary_push(return_array, hash_for_type_and_data);
     }
-    delete processor;
-    return rb_str_new2(result.c_str());
+
+		// clean up
+    zimage.set_data(NULL, 0);
+
+		// return data
+    //return rb_str_new2(result.c_str());
+
+		return return_array;
 }
 
 #ifdef __cplusplus

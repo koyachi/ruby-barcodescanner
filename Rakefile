@@ -56,7 +56,7 @@ spec = Gem::Specification.new do |s|
 	s.rubyforge_project = RUBYFORGE_PROJECT
 	s.bindir            = "bin"
 	s.require_paths     = %w[lib ext]
-	s.requirements      << 'libmagick, libzebra'
+	s.requirements      << 'libmagick, libzbar'
 	s.extensions        << 'ext/extconf.rb'
 	#s.autorequire       = ""
 	s.test_files        = Dir["test/*_test.rb"]

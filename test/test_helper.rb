@@ -1,2 +1,3 @@
 require 'test/unit'
-require File.dirname(__FILE__) + '/../lib/barcodescanner'
+require 'rubygems'
+require 'barcodescanner'

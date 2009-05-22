@@ -1,35 +1,39 @@
 
 = barcodescanner
 
-
 == Description
 
-Retrievee barcode value from barcode image file
+Retrieve barcode value from barcode image file
+
+== New in this version
+
+* Build cleanly on OSX/Macports
+* Returns a key-value hash rather than concatenated output
 
 == Installation
 
 === Archive Installation
 
+Checkout code from the repository first, and then:
+
 	rake install
-
-=== Gem Installation
-
-	gem install barcodescanner
-
+	rake test
 
 == Features/Problems
 
 === Require Libraries
 
-ImageMagick, zebra(http://zebra.sourceforge.net/)
+ImageMagick, zbar(http://zbar.sourceforge.net/)
 
-==== install zebra
+==== install zbar
 
-if you install zebra to non-x machine, 
+if you install zbar to non-x machine, 
 
-	./configure --without-gtk --withouut-qt
+	./configure --prefix=/opt/local --disable-video --without-gtk --without-qt
 
 and make, make install.
+
+Omit --prefix=/opt/local if you're building on non-OSX/Macports
 
 == Synopsis
 
@@ -37,9 +41,11 @@ and make, make install.
 	require 'barcodescanner'
 	
 	# take from test
-	expected = '9784087204254'
-	result = BarcodeScanner.process_image_file("#{expected}.jpg")
-	assert_equal(expected, result)
+  expected = 
+    [{:type=>"EAN-13", :data=>"1920222007009"},
+     {:type=>"ISBN-10", :data=>"4087204251"}]
+  result = BarcodeScanner.process_image_file("test.png")
+  assert_equal(expected, result)
 
 === "cannot open shared object file: No such file or directory "
 
@@ -49,5 +55,6 @@ and make, make install.
 == Copyright
 
 Author::    koyachi <rtk2106@gmail.com>
+Modified by:: Vishnu Gopal <g.vishnu@gmail.com>
 Copyright:: Copyright (c) 2008 koyachi
 License::   
